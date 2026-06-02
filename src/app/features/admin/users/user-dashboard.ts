@@ -57,9 +57,9 @@ export class UserDashboard {
 
     ref.afterClosed().subscribe((result) => {
       if (!result) return;
-      const newUser: User = { ...result, id: crypto.randomUUID() };
-      this.service.add(newUser).subscribe(() => {
-        this.snackBar.open('Usuario registrado correctamente', 'Cerrar', { duration: 3000 });
+      this.service.add(result as User).subscribe({
+        next: () => this.snackBar.open('Usuario registrado correctamente', 'Cerrar', { duration: 3000 }),
+        error: () => this.snackBar.open('Error al registrar el usuario', 'Cerrar', { duration: 4000 }),
       });
     });
   }
@@ -73,8 +73,9 @@ export class UserDashboard {
 
     ref.afterClosed().subscribe((result) => {
       if (!result) return;
-      this.service.update({ ...user, ...result }).subscribe(() => {
-        this.snackBar.open('Usuario actualizado correctamente', 'Cerrar', { duration: 3000 });
+      this.service.update({ ...user, ...result }).subscribe({
+        next: () => this.snackBar.open('Usuario actualizado correctamente', 'Cerrar', { duration: 3000 }),
+        error: () => this.snackBar.open('Error al actualizar el usuario', 'Cerrar', { duration: 4000 }),
       });
     });
   }
@@ -96,8 +97,9 @@ export class UserDashboard {
 
     ref.afterClosed().subscribe((confirmed) => {
       if (!confirmed) return;
-      this.service.delete(user.id).subscribe(() => {
-        this.snackBar.open('Usuario eliminado', 'Cerrar', { duration: 3000 });
+      this.service.delete(user.id).subscribe({
+        next: () => this.snackBar.open('Usuario eliminado', 'Cerrar', { duration: 3000 }),
+        error: () => this.snackBar.open('Error al eliminar el usuario', 'Cerrar', { duration: 4000 }),
       });
     });
   }

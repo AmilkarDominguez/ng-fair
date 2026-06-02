@@ -33,6 +33,26 @@
   line-height: 1;
 }
 
+.user-option {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+}
+
+.user-option-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.user-option-email {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  line-height: 1.3;
+}
+
 @media (max-width: 40rem) {
   .form-grid {
     grid-template-columns: 1fr;

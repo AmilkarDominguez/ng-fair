@@ -10,17 +10,31 @@
   } @else {
     <form [formGroup]="form" class="form-grid">
 
+      <!-- User autocomplete — solo rol EXHIBITOR -->
       <mat-form-field appearance="outline" class="field-half">
-        <mat-label>Usuario *</mat-label>
-        <mat-select formControlName="user_id">
-          @for (user of users(); track user.id) {
-            <mat-option [value]="user.id">
-              {{ user.name || user.email }}
+        <mat-label>Usuario (Expositor) *</mat-label>
+        <input matInput
+          [formControl]="userSearch"
+          [matAutocomplete]="userAuto"
+          placeholder="Buscar por nombre o correo..." />
+        <mat-autocomplete
+          #userAuto="matAutocomplete"
+          [displayWith]="displayUser"
+          (optionSelected)="onUserSelected($event)">
+          @for (user of filteredUsers(); track user.id) {
+            <mat-option [value]="user" class="user-option">
+              <span class="user-option-name">{{ user.name || user.email }}</span>
+              @if (user.name) {
+                <span class="user-option-email">{{ user.email }}</span>
+              }
             </mat-option>
           }
-        </mat-select>
-        @if (getFieldError('user_id')) {
-          <mat-error>{{ getFieldError('user_id') }}</mat-error>
+          @if (filteredUsers().length === 0) {
+            <mat-option disabled>Sin resultados</mat-option>
+          }
+        </mat-autocomplete>
+        @if (form.get('user_id')?.invalid && form.get('user_id')?.touched) {
+          <mat-error>Debe seleccionar un usuario expositor</mat-error>
         }
       </mat-form-field>
 

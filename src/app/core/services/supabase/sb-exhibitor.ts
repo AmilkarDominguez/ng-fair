@@ -88,7 +88,11 @@ export class SPExhibitor {
 
   public getUsers(): Observable<ExhibitorUser[]> {
     return from(
-      this.supabase.from('users').select('id, name, email').order('name', { ascending: true }),
+      this.supabase
+        .from('users')
+        .select('id, name, email')
+        .eq('role', 'EXHIBITOR')
+        .order('name', { ascending: true }),
     ).pipe(
       map(({ data, error }) => {
         if (error) throw error;

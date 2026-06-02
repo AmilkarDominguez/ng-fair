@@ -1,5 +1,8 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { startWith } from 'rxjs/operators';
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -21,6 +24,7 @@ export interface ExhibitorFormData {
   imports: [
     ReactiveFormsModule,
     DialogFrame,
+    MatAutocompleteModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
@@ -42,9 +46,28 @@ export class ExhibitorFormModal implements OnInit {
     return !!this.data?.exhibitor;
   }
 
-  readonly users = signal<ExhibitorUser[]>([]);
+  // Separate control for the autocomplete input (stores object or typed string)
+  readonly userSearch = new FormControl<ExhibitorUser | string>('');
+
+  private readonly _allUsers = signal<ExhibitorUser[]>([]);
   readonly editions = signal<ExhibitorEdition[]>([]);
   readonly loading = signal(true);
+
+  private readonly userSearchValue = toSignal(
+    this.userSearch.valueChanges.pipe(startWith('')),
+    { initialValue: '' as ExhibitorUser | string },
+  );
+
+  readonly filteredUsers = computed(() => {
+    const val = this.userSearchValue();
+    const term = typeof val === 'string' ? val.toLowerCase().trim() : '';
+    if (!term) return this._allUsers();
+    return this._allUsers().filter(
+      (u) =>
+        (u.name ?? '').toLowerCase().includes(term) ||
+        u.email.toLowerCase().includes(term),
+    );
+  });
 
   form = this.fb.group({
     user_id: ['', [Validators.required]],
@@ -56,14 +79,35 @@ export class ExhibitorFormModal implements OnInit {
   });
 
   ngOnInit(): void {
+    // Clear user_id whenever the user types (not selects from dropdown)
+    this.userSearch.valueChanges.subscribe((val) => {
+      if (typeof val === 'string') {
+        this.form.get('user_id')!.setValue('');
+      }
+    });
+
     let loaded = 0;
     const checkDone = () => {
       loaded++;
       if (loaded === 2) this.loading.set(false);
     };
 
-    this.service.getUsers().subscribe({ next: (u) => { this.users.set(u); checkDone(); }, error: checkDone });
-    this.service.getEditions().subscribe({ next: (e) => { this.editions.set(e); checkDone(); }, error: checkDone });
+    this.service.getUsers().subscribe({
+      next: (users) => {
+        this._allUsers.set(users);
+        // In edit mode, try to pre-select the user once the list is loaded
+        if (this.data?.exhibitor?.user) {
+          this.userSearch.setValue(this.data.exhibitor.user, { emitEvent: false });
+        }
+        checkDone();
+      },
+      error: checkDone,
+    });
+
+    this.service.getEditions().subscribe({
+      next: (e) => { this.editions.set(e); checkDone(); },
+      error: checkDone,
+    });
 
     if (this.data?.exhibitor) {
       const ex = this.data.exhibitor;
@@ -78,15 +122,21 @@ export class ExhibitorFormModal implements OnInit {
     }
   }
 
-  displayUser(user: ExhibitorUser): string {
-    return user.name ? `${user.name} (${user.email})` : user.email;
+  displayUser = (value: ExhibitorUser | string | null): string => {
+    if (!value) return '';
+    if (typeof value === 'string') return value;
+    return value.name || value.email;
+  };
+
+  onUserSelected(event: MatAutocompleteSelectedEvent): void {
+    const user = event.option.value as ExhibitorUser;
+    this.form.get('user_id')!.setValue(user.id);
+    this.form.get('user_id')!.markAsTouched();
   }
 
   onSave(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
+    this.form.markAllAsTouched();
+    if (this.form.invalid) return;
     const raw = this.form.value;
     this.dialogRef.close({
       user_id: raw.user_id!,

@@ -1,93 +1,100 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { from, Observable, BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { User } from '../../models/user.model';
-
-const MOCK_USERS: User[] = [
-  {
-    id: 'usr-001',
-    name: 'Admin Sistema',
-    email: 'admin@fairsys.com',
-    password: '••••••',
-    role: 'ADMIN',
-    state: 'ACTIVE',
-    created_at: '2025-01-10T08:00:00Z',
-    updated_at: '2025-01-10T08:00:00Z',
-  },
-  {
-    id: 'usr-002',
-    name: 'Tecno Innovar',
-    email: 'contacto@tecnoinnovar.com',
-    password: '••••••',
-    role: 'EXHIBITOR',
-    state: 'ACTIVE',
-    created_at: '2025-02-01T09:30:00Z',
-    updated_at: '2025-02-01T09:30:00Z',
-  },
-  {
-    id: 'usr-003',
-    name: 'Agro Bolivia',
-    email: 'info@agrobolivia.bo',
-    password: '••••••',
-    role: 'EXHIBITOR',
-    state: 'ACTIVE',
-    created_at: '2025-02-05T10:00:00Z',
-    updated_at: '2025-02-05T10:00:00Z',
-  },
-  {
-    id: 'usr-004',
-    name: 'Carlos Mamani',
-    email: 'cmamani@gmail.com',
-    password: '••••••',
-    role: 'VISITOR',
-    state: 'ACTIVE',
-    created_at: '2025-03-01T11:00:00Z',
-    updated_at: '2025-03-01T11:00:00Z',
-  },
-  {
-    id: 'usr-005',
-    name: 'Laura Quispe',
-    email: 'lquispe@email.com',
-    password: '••••••',
-    role: 'VISITOR',
-    state: 'INACTIVE',
-    created_at: '2025-03-10T14:00:00Z',
-    updated_at: '2025-03-10T14:00:00Z',
-  },
-  {
-    id: 'usr-006',
-    name: 'EcoTech SRL',
-    email: 'ventas@ecotech.com',
-    password: '••••••',
-    role: 'EXHIBITOR',
-    state: 'ACTIVE',
-    created_at: '2025-04-01T08:00:00Z',
-    updated_at: '2025-04-01T08:00:00Z',
-  },
-];
 
 @Injectable({ providedIn: 'root' })
 export class SPUser {
-  private data$ = new BehaviorSubject<User[]>(MOCK_USERS);
+  private supabase: SupabaseClient;
+  private data$ = new BehaviorSubject<User[]>([]);
+  private listening = false;
 
-  listen(): Observable<User[]> {
+  private readonly TABLE_NAME = 'users';
+
+  constructor() {
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+  }
+
+  public get(): Observable<User[]> {
+    return from(
+      this.supabase.from(this.TABLE_NAME).select('*').order('name', { ascending: true }),
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return (data ?? []) as User[];
+      }),
+    );
+  }
+
+  public add(item: User): Observable<User[]> {
+    const { id, created_at, updated_at, ...payload } = item;
+    return from(this.supabase.from(this.TABLE_NAME).insert([payload]).select()).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data;
+      }),
+    );
+  }
+
+  public update(item: User): Observable<User[]> {
+    const { created_at, updated_at, ...payload } = item;
+    // Exclude password from update if empty (edit without changing password)
+    if (!payload.password) {
+      const { password, ...withoutPassword } = payload;
+      return from(
+        this.supabase.from(this.TABLE_NAME).update(withoutPassword).eq('id', item.id).select(),
+      ).pipe(
+        map(({ data, error }) => {
+          if (error) {
+            console.error('Error en Supabase:', error.message);
+            throw error;
+          }
+          return data;
+        }),
+      );
+    }
+    return from(
+      this.supabase.from(this.TABLE_NAME).update(payload).eq('id', item.id).select(),
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('Error en Supabase:', error.message);
+          throw error;
+        }
+        return data;
+      }),
+    );
+  }
+
+  public delete(id: string): Observable<User[]> {
+    return from(
+      this.supabase.from(this.TABLE_NAME).delete().eq('id', id).select(),
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('Error en Supabase:', error.message);
+          throw error;
+        }
+        return data;
+      }),
+    );
+  }
+
+  public listen(): Observable<User[]> {
+    this.get().subscribe((items) => this.data$.next(items));
+
+    if (!this.listening) {
+      this.listening = true;
+      this.supabase
+        .channel('users-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: this.TABLE_NAME }, () => {
+          this.get().subscribe((data) => this.data$.next(data));
+        })
+        .subscribe();
+    }
+
     return this.data$.asObservable();
-  }
-
-  add(item: User): Observable<void> {
-    const next = [...this.data$.value, { ...item, id: crypto.randomUUID() }];
-    this.data$.next(next);
-    return of(undefined);
-  }
-
-  update(item: User): Observable<void> {
-    const next = this.data$.value.map((u) => (u.id === item.id ? item : u));
-    this.data$.next(next);
-    return of(undefined);
-  }
-
-  delete(id: string): Observable<void> {
-    const next = this.data$.value.filter((u) => u.id !== id);
-    this.data$.next(next);
-    return of(undefined);
   }
 }
