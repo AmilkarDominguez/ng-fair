@@ -1,0 +1,47 @@
+<app-dialog-frame
+  [title]="isEditMode ? 'Editar Edición' : 'Nueva Edición'"
+  [icon]="isEditMode ? 'edit' : 'event'"
+  initialSize="sm">
+
+  <form [formGroup]="form" class="form-grid">
+
+    <mat-form-field appearance="outline" class="field-full">
+      <mat-label>Nombre *</mat-label>
+      <input matInput formControlName="name" placeholder="Ej. Feria Internacional 2026" />
+      @if (getFieldError('name')) {
+        <mat-error>{{ getFieldError('name') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="field-half">
+      <mat-label>Fecha de Inicio</mat-label>
+      <input matInput type="date" formControlName="start_date" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="field-half">
+      <mat-label>Fecha de Fin</mat-label>
+      <input matInput type="date" formControlName="end_date" />
+    </mat-form-field>
+
+    @if (dateRangeError) {
+      <p class="range-error">La fecha de fin debe ser posterior a la fecha de inicio.</p>
+    }
+
+    <div class="field-half field-toggle">
+      <span class="toggle-label">Estado</span>
+      <mat-slide-toggle formControlName="active" color="primary">
+        {{ form.get('active')?.value ? 'Activo' : 'Inactivo' }}
+      </mat-slide-toggle>
+    </div>
+
+  </form>
+
+  <ng-container dialog-actions>
+    <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onSave()">
+      <mat-icon>save</mat-icon>
+      {{ isEditMode ? 'Guardar cambios' : 'Registrar' }}
+    </button>
+  </ng-container>
+
+</app-dialog-frame>

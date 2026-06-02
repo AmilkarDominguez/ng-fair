@@ -1,0 +1,30 @@
+<div class="editions-page">
+
+  <div class="page-header">
+    <div class="page-title-group">
+      <h1 class="page-title">Ediciones de Feria</h1>
+      <span class="page-subtitle">Gestión de ediciones y periodos de la feria</span>
+    </div>
+    <button mat-flat-button color="primary" class="add-button" (click)="openCreateModal()">
+      <mat-icon>add_circle</mat-icon>
+      Nueva Edición
+    </button>
+  </div>
+
+  <div class="toolbar-row">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar edición</mat-label>
+      <input matInput (input)="onSearch($event)" placeholder="Nombre de la edición..." />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+    <span class="result-count">{{ filteredEditions().length }} resultado(s)</span>
+  </div>
+
+  <app-fair-edition-table
+    [data]="filteredEditions()"
+    (edit)="onEdit($event)"
+    (view)="onView($event)"
+    (delete)="onDelete($event)"
+  />
+
+</div>

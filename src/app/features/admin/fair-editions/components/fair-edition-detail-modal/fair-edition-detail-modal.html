@@ -1,0 +1,61 @@
+<app-dialog-frame title="Detalle de Edición" icon="event" initialSize="md">
+
+  <div class="detail-grid print-area">
+
+    <div class="detail-header">
+      <div class="detail-name">{{ edition.name }}</div>
+      <mat-chip-set>
+        <mat-chip [class]="edition.state === 'ACTIVE' ? 'chip-active' : 'chip-inactive'">
+          <mat-icon matChipAvatar>{{ edition.state === 'ACTIVE' ? 'check_circle' : 'cancel' }}</mat-icon>
+          {{ edition.state === 'ACTIVE' ? 'Activo' : 'Inactivo' }}
+        </mat-chip>
+      </mat-chip-set>
+    </div>
+
+    <mat-divider />
+
+    <div class="detail-row">
+      <div class="detail-section">
+        <span class="detail-label">Fecha de Inicio</span>
+        <span class="detail-value">
+          {{ edition.start_date ? (edition.start_date | date: 'dd/MM/yyyy') : '—' }}
+        </span>
+      </div>
+
+      <div class="detail-section">
+        <span class="detail-label">Fecha de Fin</span>
+        <span class="detail-value">
+          {{ edition.end_date ? (edition.end_date | date: 'dd/MM/yyyy') : '—' }}
+        </span>
+      </div>
+    </div>
+
+    <mat-divider />
+
+    <div class="detail-dates">
+      <div class="detail-section">
+        <span class="detail-label">Fecha de Registro</span>
+        <span class="detail-value">{{ edition.created_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+      <div class="detail-section">
+        <span class="detail-label">Última Actualización</span>
+        <span class="detail-value">{{ edition.updated_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <span class="detail-label">ID del Registro</span>
+      <span class="detail-value detail-id">{{ edition.id }}</span>
+    </div>
+
+  </div>
+
+  <ng-container dialog-actions>
+    <button mat-stroked-button (click)="onClose()">Cerrar</button>
+    <button mat-stroked-button (click)="onPrint()">
+      <mat-icon>print</mat-icon>
+      Imprimir
+    </button>
+  </ng-container>
+
+</app-dialog-frame>

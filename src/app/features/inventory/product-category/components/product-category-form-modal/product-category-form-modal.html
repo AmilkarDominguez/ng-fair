@@ -1,0 +1,50 @@
+<app-dialog-frame
+  [title]="isEditMode ? 'Editar Categoría' : 'Nueva Categoría'"
+  [icon]="isEditMode ? 'edit' : 'category'"
+  initialSize="sm">
+
+  <form [formGroup]="form" class="form-grid">
+
+    <mat-form-field appearance="outline" class="field-half">
+      <mat-label>Nombre *</mat-label>
+      <input matInput formControlName="name" placeholder="Ej. Lubricantes y Aceites" />
+      @if (getFieldError('name')) {
+        <mat-error>{{ getFieldError('name') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="field-half">
+      <mat-label>Título</mat-label>
+      <input matInput formControlName="title" placeholder="Ej. Lubricantes, Aceites y Fluidos" />
+      @if (getFieldError('title')) {
+        <mat-error>{{ getFieldError('title') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="field-full">
+      <mat-label>Descripción</mat-label>
+      <textarea matInput formControlName="description" rows="2"
+        placeholder="Ej. Aceites de motor, transmisión e hidráulicos para todo tipo de vehículos."></textarea>
+      @if (getFieldError('description')) {
+        <mat-error>{{ getFieldError('description') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="field-half field-toggle">
+      <span class="toggle-label">Estado</span>
+      <mat-slide-toggle formControlName="active" color="primary">
+        {{ form.get('active')?.value ? 'Activo' : 'Inactivo' }}
+      </mat-slide-toggle>
+    </div>
+
+  </form>
+
+  <ng-container dialog-actions>
+    <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onSave()">
+      <mat-icon>save</mat-icon>
+      {{ isEditMode ? 'Guardar cambios' : 'Registrar' }}
+    </button>
+  </ng-container>
+
+</app-dialog-frame>
