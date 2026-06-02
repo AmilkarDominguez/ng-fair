@@ -1,0 +1,81 @@
+<app-dialog-frame
+  [title]="isEditMode ? 'Editar Expositor' : 'Nuevo Expositor'"
+  [icon]="isEditMode ? 'edit' : 'storefront'"
+  initialSize="md">
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="36" />
+    </div>
+  } @else {
+    <form [formGroup]="form" class="form-grid">
+
+      <mat-form-field appearance="outline" class="field-half">
+        <mat-label>Usuario *</mat-label>
+        <mat-select formControlName="user_id">
+          @for (user of users(); track user.id) {
+            <mat-option [value]="user.id">
+              {{ user.name || user.email }}
+            </mat-option>
+          }
+        </mat-select>
+        @if (getFieldError('user_id')) {
+          <mat-error>{{ getFieldError('user_id') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="field-half">
+        <mat-label>Edición *</mat-label>
+        <mat-select formControlName="edition_id">
+          @for (edition of editions(); track edition.id) {
+            <mat-option [value]="edition.id">{{ edition.name }}</mat-option>
+          }
+        </mat-select>
+        @if (getFieldError('edition_id')) {
+          <mat-error>{{ getFieldError('edition_id') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="field-half">
+        <mat-label>Empresa</mat-label>
+        <input matInput formControlName="company_name" placeholder="Nombre de la empresa" />
+        @if (getFieldError('company_name')) {
+          <mat-error>{{ getFieldError('company_name') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="field-half">
+        <mat-label>Rubro</mat-label>
+        <input matInput formControlName="sector" placeholder="Ej. Tecnología, Agro..." />
+        @if (getFieldError('sector')) {
+          <mat-error>{{ getFieldError('sector') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="field-full">
+        <mat-label>URL del Logo</mat-label>
+        <input matInput formControlName="logo_url" placeholder="https://..." />
+        @if (getFieldError('logo_url')) {
+          <mat-error>{{ getFieldError('logo_url') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="field-half field-toggle">
+        <span class="toggle-label">Estado</span>
+        <mat-slide-toggle formControlName="active" color="primary">
+          {{ form.get('active')?.value ? 'Activo' : 'Inactivo' }}
+        </mat-slide-toggle>
+      </div>
+
+    </form>
+  }
+
+  <ng-container dialog-actions>
+    <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onSave()" [disabled]="loading()">
+      <mat-icon>save</mat-icon>
+      {{ isEditMode ? 'Guardar cambios' : 'Registrar' }}
+    </button>
+  </ng-container>
+
+</app-dialog-frame>

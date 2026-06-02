@@ -29,6 +29,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/fair-editions/fair-edition-dashboard').then((m) => m.FairEditionDashboard),
       },
+      {
+        path: 'admin/categories',
+        loadComponent: () =>
+          import('./features/admin/categories/category-dashboard').then((m) => m.CategoryDashboard),
+      },
+      {
+        path: 'admin/exhibitors',
+        loadComponent: () =>
+          import('./features/admin/exhibitors/exhibitor-dashboard').then((m) => m.ExhibitorDashboard),
+      },
       { path: '**', redirectTo: 'dashboard' },
     ],
   },

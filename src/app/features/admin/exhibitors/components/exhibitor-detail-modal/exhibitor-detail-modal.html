@@ -1,0 +1,74 @@
+<app-dialog-frame title="Detalle de Expositor" icon="storefront" initialSize="md">
+
+  <div class="detail-grid print-area">
+
+    <div class="detail-header">
+      <div class="detail-name">{{ displayName }}</div>
+      <mat-chip-set>
+        <mat-chip [class]="exhibitor.state === 'ACTIVE' ? 'chip-active' : 'chip-inactive'">
+          <mat-icon matChipAvatar>{{ exhibitor.state === 'ACTIVE' ? 'check_circle' : 'cancel' }}</mat-icon>
+          {{ exhibitor.state === 'ACTIVE' ? 'Activo' : 'Inactivo' }}
+        </mat-chip>
+      </mat-chip-set>
+    </div>
+
+    <mat-divider />
+
+    <div class="detail-row">
+      <div class="detail-section">
+        <span class="detail-label">Edición</span>
+        <span class="detail-value">{{ exhibitor.edition?.name || '—' }}</span>
+      </div>
+      <div class="detail-section">
+        <span class="detail-label">Rubro</span>
+        <span class="detail-value">{{ exhibitor.sector || '—' }}</span>
+      </div>
+    </div>
+
+    <div class="detail-row">
+      <div class="detail-section">
+        <span class="detail-label">Usuario</span>
+        <span class="detail-value">{{ exhibitor.user?.name || exhibitor.user?.email || '—' }}</span>
+      </div>
+      <div class="detail-section">
+        <span class="detail-label">Correo del Usuario</span>
+        <span class="detail-value">{{ exhibitor.user?.email || '—' }}</span>
+      </div>
+    </div>
+
+    @if (exhibitor.logo_url) {
+      <div class="detail-section">
+        <span class="detail-label">URL del Logo</span>
+        <span class="detail-value detail-url">{{ exhibitor.logo_url }}</span>
+      </div>
+    }
+
+    <mat-divider />
+
+    <div class="detail-dates">
+      <div class="detail-section">
+        <span class="detail-label">Fecha de Registro</span>
+        <span class="detail-value">{{ exhibitor.created_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+      <div class="detail-section">
+        <span class="detail-label">Última Actualización</span>
+        <span class="detail-value">{{ exhibitor.updated_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <span class="detail-label">ID del Registro</span>
+      <span class="detail-value detail-id">{{ exhibitor.id }}</span>
+    </div>
+
+  </div>
+
+  <ng-container dialog-actions>
+    <button mat-stroked-button (click)="onClose()">Cerrar</button>
+    <button mat-stroked-button (click)="onPrint()">
+      <mat-icon>print</mat-icon>
+      Imprimir
+    </button>
+  </ng-container>
+
+</app-dialog-frame>
